@@ -1,3 +1,5 @@
+/** @format */
+
 .header {
   height: 70px;
   width: 100%;
@@ -9,6 +11,9 @@
     height: 100%;
     width: 70px;
     padding: 25px;
+  }
+  .logo {
+    background-size: 20px 30px;
   }
 
   .options {
