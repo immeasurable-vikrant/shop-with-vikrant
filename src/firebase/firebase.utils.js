@@ -1,9 +1,6 @@
-import firebase from 'firebase/app';
-
-//for database
-import 'firebase/firestore';
-//for authentication
-import 'firebase/auth';
+import { initializeApp } from 'firebase/app';
+import { getAuth, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { getFirestore, doc, getDoc, setDoc } from 'firebase/firestore';
 
 const config = {
   apiKey: 'AIzaSyAPa73Gbxn1OabbIr6Y05bVokSlo0u-rAU',
@@ -15,43 +12,40 @@ const config = {
   measurementId: 'G-M2XHWW1BJH',
 };
 
+const app = initializeApp(config);
+
 export const createUserProfileDocument = async (userAuth, additionalData) => {
   if (!userAuth) return;
-  const userRef = firestore.doc(`users/${userAuth.uid}`);
-  const snapshot = await userRef.get();
-  console.log('ssssssssssssssss', snapshot);
-  if (!snapshot.exists) {
+
+  const firestore = getFirestore(app);
+  const userRef = doc(firestore, `users/${userAuth.uid}`);
+  const snapshot = await getDoc(userRef);
+
+  if (!snapshot.exists()) {
     const { displayName, email } = userAuth;
-    console.log('userAuth', userAuth);
     const createdAt = new Date();
+
     try {
-      await userRef.set({
+      await setDoc(userRef, {
         displayName,
         email,
         createdAt,
         ...additionalData,
       });
     } catch (error) {
-      console.log('error creating user', error.message);
+      console.error('Error creating user', error.message);
     }
   }
+
   return userRef;
 };
 
-//initialization of App
-firebase.initializeApp(config);
+export const auth = getAuth(app);
+export const firestore = getFirestore(app);
 
-//(.)auth method on firebase
-export const auth = firebase.auth();
-
-//(.)firestore method on firebase
-export const firestore = firebase.firestore();
-
-//google authentication utility
-const provider = new firebase.auth.GoogleAuthProvider();
-
+const provider = new GoogleAuthProvider();
 provider.setCustomParameters({ prompt: 'select_account' });
 
-export const signInWithGoogle = () => auth.signInWithPopup(provider);
+export const signInWithGoogle = () => signInWithPopup(auth, provider);
 
-export default firebase;
+export default app;
